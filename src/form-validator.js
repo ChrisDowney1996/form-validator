@@ -13,7 +13,7 @@ void function (global, factory) {
       name: 'required',
       msg: '必填项',
       validator: function (value, prop, rule) {
-        return value != null || value !== ''
+        return value != null && value !== ''
       }
     },
     {
@@ -26,36 +26,47 @@ void function (global, factory) {
   ]
 
   var FormValidator = function (rule) {
-    var rules = defaultRules
-
-    if (_util.checkType(rule, 'Array')) {
-      rules = rules.concat(rule)
-    } else if (_util.checkType(rule, 'Object')) {
-      rules.push(rule)
-    }
-
-    this.rules = rules
+    this.rules = _extend(defaultRules, rule)
     this.validator = _validator
-    this.extend = _extend
+    this.extend = function (rule) {
+      this.rules = _extend.apply(this, this.rules, rule)
+    }
   }
 
-  function _extend (rule) {
-    if (_util.checkType(rule, 'Array')) {
-      this.rules = this.rules.concat(rule)
-    } else if (_util.checkType(rule, 'Object')) {
-      this.rules.push(rule)
+  function _extend (rules, rule) {
+    var merge = function (r) {
+      var hasMatch = false
+      if (!_util.isObject(r)) { return }
+      for (var i = 0; i < rules.length; i++) {
+        if (rules[i].name === r.name) {
+          hasMatch = true
+          rules[i] = _util.extend(rules[i], r)
+        }
+      }
+      if (hasMatch === false) {
+        rules.push(r)
+      }
     }
+    if (_util.checkType(rule, 'Array')) {
+      for (var i = 0; i < rule.length; i++) {
+        merge(rule[i])
+      }
+    } else if (_util.checkType(rule, 'Object')) {
+      merge(rule)
+    }
+    return rules
   }
 
   /**
-   * @param model {Object} 验证的表单模型
-   * @param matchRules {Object} 需要验证的表单字段规则 {title: [{...defaultRules}]}
-   * @param callback {Function} 验证完成回调参数见下(参数1, 参数2)
+   * @param model {Object} 校验的表单模型
+   * @param matchRules {Object} 需要校验的表单字段规则 {title: [{...defaultRules}]}
+   * @param callback {Function} 校验完成回调参数见下(参数1, 参数2)
    * @param callback.回调参数1 {Boolean} 校验是否通过
    * @param callback.回调参数2 {Object} 校验错误返回的字段
+   * @param errorCallback {Function} 异步校验错误回调
    * @private
    */
-  function _validator (model, matchRules, callback) {
+  function _validator (model, matchRules, callback, errorCallback) {
     var rules = this.rules
     var modelKeys = _util.objectKeys(model)
     if (
@@ -67,13 +78,14 @@ void function (global, factory) {
     // 1.过滤需要进行校验的字段(model 和 matchRules 进行匹配)
     var matchKeys = _filterMatchField(model, matchRules)
     if (matchKeys.length === 0) { return callback(true, null) }
-    // 2.合并所有需要进行验证的规则数据
-    // console.log('matchKeys: ', matchKeys)
+    // 2.合并所有需要进行校验的规则数据
     var validatorData = _mergeValidatorData(matchKeys, rules, model, matchRules)
     if (_util.objectKeys(validatorData).length === 0){ return callback(true, null) }
     // 3.将合并之后的进行校验
     runValidator(validatorData, function (result) {
       callback(_util.objectKeys(result).length === 0, result)
+    }, function () {
+      errorCallback.apply(this, arguments)
     })
   }
 
@@ -81,9 +93,10 @@ void function (global, factory) {
    * @param validatorData
    * @param callback
    */
-  function runValidator (validatorData, callback) {
-    var asyncValidatorLength =  getAsyncValidatorLength(validatorData)
+  function runValidator (validatorData, callback, errorCallback) {
+    var asyncValidatorLength = getAsyncValidatorLength(validatorData)
     var result = {}
+    var asyncError = false
     // 同步校验
     for (var key in validatorData) {
       var errors = []
@@ -111,25 +124,33 @@ void function (global, factory) {
           var item = validatorData[key].asyncValidator[i]
           var value = validatorData[key].value
           item.asyncValidator(value, key, item, function (validatorResult) {
-            var error
-            var hasError = false
-            if (validatorResult === false) {
-              error = _util.extend(item, { value: value })
-              hasError = true
-            } else if (validatorResult && validatorResult.valid === false) {
-              error = _util.extend(item, { value: value }, validatorResult)
-              hasError = true
-            }
-            if (hasError) {
-              if (_util.checkType(result[key], 'Array')) {
-                result[key].push(error)
-              } else {
-                result[key] = [error]
+            if (asyncError === false) {
+              var error
+              var hasError = false
+              if (validatorResult === false) {
+                error = _util.extend(item, { value: value })
+                hasError = true
+              } else if (validatorResult && validatorResult.valid === false) {
+                error = _util.extend(item, { value: value }, validatorResult)
+                hasError = true
+              }
+              if (hasError) {
+                if (_util.checkType(result[key], 'Array')) {
+                  result[key].push(error)
+                } else {
+                  result[key] = [error]
+                }
+              }
+              if (--asyncValidatorLength <= 0) {
+                callback(result)
               }
             }
-            if (--asyncValidatorLength <= 0) {
-              callback(result)
-            }
+          }, function (error) { // 异步错误，释放i 和 key
+            asyncError = true
+            i = null
+            key = null
+            result = null
+            errorCallback(new Error(error))
           })
         }(i, key)
       }
@@ -214,8 +235,6 @@ void function (global, factory) {
               console.warn('rule: {' + keyRule.name + '} 缺少validator函数或asyncValidator')
             }
           }
-        } else {
-          console.log('keyRules: ', keyRules)
         }
       }
       if (validatorInfo.validator.length > 0 || validatorInfo.asyncValidator.length > 0) {
@@ -226,8 +245,8 @@ void function (global, factory) {
   }
 
   /**
-   * @param model {Object} 验证的表单模型
-   * @param matchRules {Object} 需要验证的表单字段规则 {title: [{...defaultRules}]}
+   * @param model {Object} 校验的表单模型
+   * @param matchRules {Object} 需要校验的表单字段规则 {title: [{...defaultRules}]}
    * @return {[]|string} 需要校验的字段
    * @private
    */

@@ -1,88 +1,155 @@
-# 校验工具，内置了身份证号码、法人和其他组织统一社会信用代码 的合法性校验
+# 表单校验工具
 <div align="center">
 
 [![MIT](https://img.shields.io/dub/l/vibe-d.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 
 </div>
 
-校验 `身份证号码` 和 `法人和其他组织统一社会信用代码` 是基于 [IDCheck（Go语言）](https://github.com/bluesky335/IDCheck)，这是JS的实现方式，支持CMD和AMD方式引入。
+一个能在IE5上运行的表单校验工具，支持异步校验
 
-计算规则参考国家标准文件：
-
-- **标准号：GB 11643-1999**：[公民身份证号码](http://www.gb688.cn/bzgk/gb/newGbInfo?hcno=080D6FBF2BB468F9007657F26D60013E)
-
-- **标准号：GB 32100-2015**：[法人和其他组织统一社会信用代码编码规则](http://www.gb688.cn/bzgk/gb/newGbInfo?hcno=24691C25985C1073D3A7C85629378AC0)
-
-> 注：由于早期部分试点地区推行 `法人和其他组织统一社会信用代码` 较早，会存在部分代码不符合国家标准的情况。但它们都是合法的代码，应当另行处理。
-> 例如：
->
-> **福建恒跃柳工机械销售有限公司**: `91350100M0001TGQXM` 计算出的校验位是 1 和 M 不符
->
-> **厦门云上晴空航空科技有限公司**:`91350211M0000XUF46` 计算出的校验位是 R 和 6 不符
->
-> **厦门黑脉网络科技有限公司**`91350203M0001FUE2P` 计算出的校验位是 J 和 P 不符
 # 浏览器支持
-IE5+和现代浏览器
+* IE5+
+* 现代浏览器
 # 使用方法
-
+  - 浏览器
 ```
-	<script src="../dist/validators.min.js"></script>
+<script src="../dist/form-validator.min.js"></script>
+	
 ```
-
-- 法人和其他组织统一社会信用代码
+  - 快速开始
 ```
-  if (validators.isUSCI('91350100M000100Y43')) {
-	console.log('✅正确')
-  } else {
-    console.log('✅错误')
+var formValidator = new FormValidator([
+    {
+      name: 'required',
+      msg: '自定义规则信息',
+      validator: function (value, prop, rule) {
+        return value != null && value !== ''
+      }
+    }
+  ])
+  // 表单字段
+  var formModel = {
+    title: '',
+    age: 17
   }
-```
-
-- 身份证号码
-
-```
-  if (validators.isID('11010519491231002X')) {
-	console.log('✅正确')
-  } else {
-    console.log('✅错误')
+  // 校验表单字段需要的规则
+  var formRule = {
+    title: [
+      { name: 'required', msg: '标题为必填项' }
+    ],
+    age: [
+      { name: 'required', msg: '年龄为必填项' }
+    ]
   }
-```
-- 扩展（基于静态方法）
-
-```
-  validators.extend({
-      isEmail: function (value) {
-        return /^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/.test(value)
-      }
+  // 执行校验
+  formValidator.validator(formModel, formRule, function (valid, errors) {
+    if (valid) {
+      console.log('校验通过')
+    } else {
+      console.log('校验失败：', errors)
+    }
   })
-  // 调用
-  validators.isEmail('123456789@gmail.com')
 ```
-- 扩展（基于原型实例）
+  
+- 异步校验
 
 ```
-  validators.fn.extend({
-      isEmail: function (value) {
-        return /^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/.test(value)
+var formValidator = new FormValidator([
+        {
+          name: 'async-rule',
+          msg: '自定义规则信息, 必填字段不能为空',
+          asyncValidator: function (value, prop, rule, complete, error) {
+            setTimeout(function () {
+              var isValid = value != null && value !== ''
+              complete(isValid)
+            }, 1500)
+            // 如果异步校验出错，强烈建议调用 error 回调，释放闭包内存
+            // error('错误信息')
+          }
+        }
+      ])
+      var formModel = {
+        title: ''
       }
-  })
-  // 调用
-  validators().isEmail('123456789@gmail.com')
-```
-- 扩展（原型实例和静态方法）
-```
-  validators.extend({
-      isEmail: function (value) {
-        return /^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/.test(value)
+      var formRule = {
+        title: [
+          { name: 'async-rule' }
+        ]
       }
-  }, 'all')
-  // 调用
-  validators().isEmail('123456789@gmail.com')
-  validators.isEmail('123456789@gmail.com')
+      formValidator.validator(formModel, formRule, function (valid, errors) {
+        if (valid) {
+          console.log('校验通过')
+        } else {
+          console.log('校验失败：', errors)
+        }
+      }, function (error) { // 异步校验出错，error回调函数
+        console.log(error)
+      })
 ```
-# Go语言版本
-LiuWanLin [IDCheck](https://github.com/bluesky335/IDCheck)
+- 自定义规则
 
+```
+var formValidator = new FormValidator()
+    var formModel = {
+      age: 17
+    }
+    var formRule = {
+      age: [
+        {
+          msg: '年龄必须大于18岁，在调用规则的时候自定义',
+          validator: function (value, prop, rule) {
+            return value >= 18
+          }
+        }
+      ]
+    }
 
+    formValidator.validator(formModel, formRule, function (valid, errors) {
+      if (valid) {
+        console.log('校验通过')
+      } else {
+        console.log('校验失败：', errors)
+      }
+    }, function (error) { // 异步校验出错，error回调函数
+      console.log(error)
+    })
+```
+- 扩展
+1. 构造函数创建时候扩展
+```
+var formValidator = new FormValidator([
+      {
+        name: 'extend-rule',
+        msg: '自定义规则信息, 必填字段不能为空',
+        asyncValidator: function (value, prop, rule, complete, error) {
+          setTimeout(function () {
+            var isValid = value != null && value !== ''
+            complete(isValid)
+          }, 1500)
+          // 如果异步校验出错，强烈建议调用 error 回调，释放闭包内存
+          // error('错误信息')
+        }
+      }
+    ])
+
+```
+2.使用实例化对象 extend 方法扩展
+```
+var formValidator = new FormValidator()
+formValidator.extend([
+    {
+     name: 'extend-rule',
+     msg: '自定义规则信息, 必填字段不能为空',
+     asyncValidator: function (value, prop, rule, complete, error) {
+       setTimeout(function () {
+         var isValid = value != null && value !== ''
+         complete(isValid)
+       }, 1500)
+       // 如果异步校验出错，强烈建议调用 error 回调，释放闭包内存
+       // error('错误信息')
+     }
+    }
+])
+```
 # License
 [MIT](http://opensource.org/licenses/MIT)

@@ -58,54 +58,106 @@
 </div>
 <script src="//lib.baomitu.com/jquery/1.12.4/jquery.min.js"></script>
 <script src="../src/form-validator.js"></script>
-<script src="../dist/form-validator.min.js"></script>
+<!--<script src="../dist/form-validator.min.js"></script>-->
 <script>
-  var model = {
-    name: '安逗和黑仔',
-    tel: '1861577132'
+
+
+  function quickStart () {
+    var formValidator = new FormValidator([
+      {
+        name: 'required',
+        msg: '自定义规则信息',
+        validator: function (value, prop, rule) {
+          return value != null && value !== ''
+        }
+      }
+    ])
+    var formModel = {
+      title: '',
+      age: 17
+    }
+    var formRule = {
+      title: [
+        { name: 'required', msg: '标题为必填项' }
+      ],
+      age: [
+        { name: 'required', msg: '年龄为必填项' }
+      ]
+    }
+
+    formValidator.validator(formModel, formRule, function (valid, errors) {
+      if (valid) {
+        console.log('校验通过')
+      } else {
+        console.log('校验失败：', errors)
+      }
+    })
   }
-  var formValidator = new FormValidator(
-    {
-      name: '圆形',
-      msg: '请输入正确的手机号',
-      validator: function (value, prop, rule) {
-        return /^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/.test(value)
+
+  function async () {
+    var formValidator = new FormValidator([
+      {
+        name: 'async-rule',
+        msg: '自定义规则信息, 必填字段不能为空',
+        asyncValidator: function (value, prop, rule, complete, error) {
+          setTimeout(function () {
+            var isValid = value != null && value !== ''
+            complete(isValid)
+          }, 1500)
+          // 如果异步校验出错，强烈建议调用 error 回调，释放闭包内存
+          // error('错误信息')
+        }
       }
+    ])
+    var formModel = {
+      title: ''
     }
-  )
-  formValidator.extend([
-    {
-      name: 'instance',
-      msg: '请输入正确的手机号',
-      validator: function (value, prop, rule) {
-        return /^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/.test(value)
+    var formRule = {
+      title: [
+        { name: 'async-rule' }
+      ]
+    }
+
+    formValidator.validator(formModel, formRule, function (valid, errors) {
+      if (valid) {
+        console.log('校验通过')
+      } else {
+        console.log('校验失败：', errors)
       }
+    }, function (error) { // 异步校验出错，error回调函数
+      console.log(error)
+    })
+  }
+
+  function custom () {
+    var formValidator = new FormValidator()
+    var formModel = {
+      age: 17
     }
-  ])
-  formValidator.validator(model, {
-    name: [
-      {name: 'required'}
-    ],
-    tel: [
-      {name: 'required'},
-      {name: 'tel'}
-    ]
-  }, function (valid, errors) {
-    if (valid) {
-      console.log('校验成功')
-    } else {
-      console.log('校验失败：', errors)
+    var formRule = {
+      age: [
+        {
+          msg: '年龄必须大于18岁，自定义规则',
+          validator: function (value, prop, rule) {
+            return value >= 18
+          }
+        }
+      ]
     }
-  })
-  // var a = [0, 1, 2, 3]
-  // for (var i in a) {
-  //     console.log('i: ', i)
-  //     console.log('value: ', a[i])
-  // }
-  // for (var i = 0; i < a.length; i++) {
-  //   console.log('i: ', i)
-  //   console.log('value: ', a[i])
-  // }
+
+    formValidator.validator(formModel, formRule, function (valid, errors) {
+      if (valid) {
+        console.log('校验通过')
+      } else {
+        console.log('校验失败：', errors)
+      }
+    }, function (error) { // 异步校验出错，error回调函数
+      console.log(error)
+    })
+  }
+  custom()
+  var formValidator = new FormValidator()
+
 </script>
 </body>
 </html>
