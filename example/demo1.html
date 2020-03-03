@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>validators demo</title>
+  <style>
+    body{margin: 0; padding: 18px 24px;}
+    .form{
+      margin-top: -30px;
+    }
+    .form-item{
+      margin-top: 30px;
+    }
+    .form-item input{
+      outline: none;
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+    }
+    .form-item span{
+      color: #666;
+    }
+    .form-item-msg{
+      color: #666;
+    }
+    .form-item-msg--error{
+      color: #f56c6c!important;
+    }
+    .form-item-msg--success{
+      color: #67C23A!important;
+    }
+    .form-item-label{
+      margin-bottom: 6px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="form">
+    <div class="form-item">
+      <div class="form-item-label">身份证</div>
+      <div class="form-item-content">
+        <input type="text" name="id" placeholder="请输入身份证号码" value="11010519491231002X">
+        <span class="form-item-msg form-item-msg--success">验证成功</span>
+      </div>
+    </div>
+    <a href="" target="_blank"></a>
+    <div class="form-item">
+      <div class="form-item-label">统一社会信用代码</div>
+      <div class="form-item-content">
+        <input type="text" name="usci" placeholder="统一社会信用代码" value="91350100M000100Y43">
+        <span class="form-item-msg form-item-msg--success">验证成功</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="//lib.baomitu.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="../src/form-validator.js"></script>
+<script src="../dist/form-validator.min.js"></script>
+<script>
+  var model = {
+    name: '安逗和黑仔',
+    tel: '1861577132'
+  }
+  var formValidator = new FormValidator(
+    {
+      name: '圆形',
+      msg: '请输入正确的手机号',
+      validator: function (value, prop, rule) {
+        return /^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/.test(value)
+      }
+    }
+  )
+  formValidator.extend([
+    {
+      name: 'instance',
+      msg: '请输入正确的手机号',
+      validator: function (value, prop, rule) {
+        return /^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/.test(value)
+      }
+    }
+  ])
+  formValidator.validator(model, {
+    name: [
+      {name: 'required'}
+    ],
+    tel: [
+      {name: 'required'},
+      {name: 'tel'}
+    ]
+  }, function (valid, errors) {
+    if (valid) {
+      console.log('校验成功')
+    } else {
+      console.log('校验失败：', errors)
+    }
+  })
+  // var a = [0, 1, 2, 3]
+  // for (var i in a) {
+  //     console.log('i: ', i)
+  //     console.log('value: ', a[i])
+  // }
+  // for (var i = 0; i < a.length; i++) {
+  //   console.log('i: ', i)
+  //   console.log('value: ', a[i])
+  // }
+</script>
+</body>
+</html>

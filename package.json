@@ -1,0 +1,28 @@
+{
+  "name": "form-validator",
+  "version": "0.0.1",
+  "description": "Form表单校验工具",
+  "main": "dict/form-validator.min.js",
+  "scripts": {
+    "build": "grunt",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChrisDowney1996/validators.git"
+  },
+  "keywords": [
+    "validators", "validator"
+  ],
+  "author": "Andou",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ChrisDowney1996/validators/issues"
+  },
+  "homepage": "https://github.com/ChrisDowney1996/validators#readme",
+  "devDependencies": {
+    "grunt": "^1.0.3",
+    "grunt-contrib-jshint": "^2.0.0",
+    "grunt-contrib-uglify": "^4.0.0"
+  }
+}
