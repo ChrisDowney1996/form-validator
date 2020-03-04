@@ -1,5 +1,5 @@
 {
-  "name": "form-validator",
+  "name": "@as80393313/form-validator",
   "version": "0.0.1",
   "description": "Form表单校验工具",
   "main": "dict/form-validator.min.js",
@@ -12,14 +12,17 @@
     "url": "git+https://github.com/ChrisDowney1996/validators.git"
   },
   "keywords": [
-    "validators", "validator"
+    "form-validator", "@cd/form-validator", "validator", "async-validator"
+  ],
+  "files": [
+    "dist"
   ],
   "author": "Andou",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ChrisDowney1996/validators/issues"
+    "url": "https://github.com/ChrisDowney1996/form-validator/issues"
   },
-  "homepage": "https://github.com/ChrisDowney1996/validators#readme",
+  "homepage": "https://github.com/ChrisDowney1996/form-validator#readme",
   "devDependencies": {
     "grunt": "^1.0.3",
     "grunt-contrib-jshint": "^2.0.0",
