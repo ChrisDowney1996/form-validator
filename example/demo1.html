@@ -4,37 +4,7 @@
   <meta charset="UTF-8">
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>validators demo</title>
-  <style>
-    body{margin: 0; padding: 18px 24px;}
-    .form{
-      margin-top: -30px;
-    }
-    .form-item{
-      margin-top: 30px;
-    }
-    .form-item input{
-      outline: none;
-      border: 1px solid #ddd;
-      padding: 8px 12px;
-    }
-    .form-item span{
-      color: #666;
-    }
-    .form-item-msg{
-      color: #666;
-    }
-    .form-item-msg--error{
-      color: #f56c6c!important;
-    }
-    .form-item-msg--success{
-      color: #67C23A!important;
-    }
-    .form-item-label{
-      margin-bottom: 6px;
-      color: #333;
-    }
-  </style>
+  <title>form-validator demo</title>
 </head>
 <body>
 <div id="app">
@@ -43,8 +13,6 @@
 <script src="../src/form-validator.js"></script>
 <!--<script src="../dist/form-validator.min.js"></script>-->
 <script>
-
-
   function quickStart () {
     var formValidator = new FormValidator([
       {
