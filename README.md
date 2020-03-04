@@ -10,13 +10,18 @@
 # 浏览器支持
 * IE5+
 * 现代浏览器
-# 使用方法
+# 安装
+  - NPM
+```
+npm install @as80393313/form-validator --save-dev
+	
+```
   - 浏览器
 ```
 <script src="../dist/form-validator.min.js"></script>
 	
 ```
-  - 快速开始
+# 使用
 ```
 var formValidator = new FormValidator([
     {
@@ -51,7 +56,7 @@ var formValidator = new FormValidator([
   })
 ```
   
-- 异步校验
+### 异步校验
 
 ```
 var formValidator = new FormValidator([
@@ -86,7 +91,7 @@ var formValidator = new FormValidator([
         console.log(error)
       })
 ```
-- 自定义规则
+### 自定义规则
 
 ```
 var formValidator = new FormValidator()
@@ -114,7 +119,7 @@ var formValidator = new FormValidator()
       console.log(error)
     })
 ```
-- 扩展
+### 扩展
 1. 构造函数创建时候扩展
 ```
 var formValidator = new FormValidator([
